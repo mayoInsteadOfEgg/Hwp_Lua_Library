@@ -1,7 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="HwpLuaLib/HwpLuaLib.vcxproj" Id="36098972-7ea6-49bc-a832-5056a1953fbe" />
-</Solution>
