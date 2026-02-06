@@ -1,6 +1,5 @@
 local luacom = require("luacom")
-local HwpLuaLib = require("HwpLuaLib")
-local FileDialog = require("FileDialog")
+local HwpLuaModule = require("HwpLuaModule")
 
 local quitButton = {}
 
@@ -28,30 +27,39 @@ function love.mousepressed(x, y, button)
         if x >= quitButton.x and x <= quitButton.x + textWidth and
            y >= quitButton.y and y <= quitButton.y + textHeight then
             -- Action to perform when clicked (e.g., quit the game)
-            local hwp = HwpLuaLib.HwpInstance.GetActiveObject()
+            
+            local hwp = HwpLuaModule.GetObject()
             if hwp then
                 print("found")
-        
                 print(hwp)
                 
-                hwp.HAction:GetDefault("InsertText", hwp.HParameterSet.HInsertText.HSet)
-                hwp.HParameterSet.HInsertText.Text = "hello world"
-                hwp.HAction:Execute("InsertText", hwp.HParameterSet.HInsertText.HSet)
-                
-                hwp.HAction:Run("BreakPara")
+                local start_time = os.clock()
+                -- HAction, HParameterSet 미리 가져오기 (루프 재사용)
+                local ha = hwp.HAction
+                local ps = hwp.HParameterSet
+                local insert_set = ps.HInsertText.HSet  -- 반복 사용
 
-                hwp.HAction:GetDefault("InsertText", hwp.HParameterSet.HInsertText.HSet)
-                hwp.HParameterSet.HInsertText.Text = "한글테스트"
-                hwp.HAction:Execute("InsertText", hwp.HParameterSet.HInsertText.HSet)
+                -- 테스트할 텍스트
+                local texts = {"hello world", "한글테스트"}
 
-                hwp.HAction:Run("BreakPara")
+                local start_time = os.clock()
 
-                -- local img_path = FileDialog.open("images")
-                -- if img_path then
-                --     hwp:InsertBackgroundPicture("SelectedCell", img_path, True)
-                -- end
-            
+                for i = 1, 1000 do
+                    for _, txt in ipairs(texts) do
+                        ha:GetDefault("InsertText", insert_set)
+                        ps.HInsertText.Text = txt
+                        ha:Execute("InsertText", insert_set)
+                        ha:Run("BreakPara")  -- 문단 나누기
+                    end
+
+                    -- 50 루프마다 가비지 컬렉션
+                    if i % 50 == 0 then
+                        collectgarbage("collect")
+                    end
+                end
+
                 print("done")
+                print(os.clock()-start_time)
             else
                 print("not found")
             end

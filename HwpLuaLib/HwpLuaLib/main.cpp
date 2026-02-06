@@ -59,10 +59,14 @@ static IDispatch* GetHwpObject() {
 static int l_GetActiveObject(lua_State* L) {
     IDispatch* pHwp = GetHwpObject();
     if (pHwp) {
-        // 루아에서 이 객체를 다룰 수 있게 luacom 등을 쓰거나 
-        // 포인터를 그대로 넘겨줄 수 있습니다. 
-        // 여기서는 가장 범용적인 'lightuserdata'로 포인터를 넘깁니다.
-        luacom_IDispatch2LuaCOM(L, (void*) pHwp);
+        // [수정 핵심] LuaCOM 객체로 변환하여 스택에 넣습니다.
+        // luacom_IDispatch2LuaCOM은 내부적으로 AddRef를 처리할 수 있습니다.
+        luacom_IDispatch2LuaCOM(L, (void*)pHwp);
+
+        // GetHwpObject 내부의 QueryInterface로 증가된 참조 카운트를 
+        // 여기서 Release 해주어야 Lua의 GC와 충돌하지 않습니다.
+        pHwp->Release();
+
         return 1;
     }
     lua_pushnil(L);
